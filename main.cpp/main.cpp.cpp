@@ -81,6 +81,8 @@ void display(moodEntry moods[], int);
 void SearchMood(moodEntry moods[], int& moodCount);
 void SearchByDate(moodEntry moods[], int& moodcount);
 void SearchByType(moodEntry moods[], int& moodcount);
+void SearchByLevel(moodEntry moods[], int& moodcount);
+void SearchByWord(moodEntry moods[], int& moodcount);
 void updateFuncion(moodEntry moods[], int& moodCount);
 void Delete(moodEntry moods[], int& moodCount);
 void DisplayStatistics(int);
@@ -815,26 +817,37 @@ void display(moodEntry moods[], int moodCount)
 }
 
 //Search moods function
-
 void SearchByDate(moodEntry moods[], int& moodCount) {
     system("cls");
     int day, month, year;
     bool found = false;
-    cout << "_________________________________________________________________";
-    cout << "Enter the day:";
+    cout << "_________________________________________________________________\n";
+    cout << "Enter the day:\n";
     cin >> day;
-    cout << endl << "      ________________";
-    cout << endl << "Enter the month:";
+    cout << endl << "      ________________\n";
+    cout << endl << "Enter the month:\n";
     cin >> month;
-    cout << endl << "      ________________";
-    cout << endl << "Enter the year:";
+    cout << endl << "      ________________\n";
+    cout << endl << "Enter the year:\n";
     cin >> year;
-    cout << endl << "      ________________";
-    for (int i = 0; i < moodCount; i++)
-        if (moods[i].time.day == day && moods[i].time.month == month && moods[i].time.year == year) {
-            mood_output(moods, i);
-            found = true;
+    cout << endl << "      ________________\n";
+    if (day < 1 || day>31 || month < 1 || month>12) {
+        cout << "╔════════════════════════════════════╗\n";
+        cout << "║                                    ║\n";
+        cout << "║        Inva4lid date entered!      ║\n";
+        cout << "║    Day must be in betweem (1:31)   ║\n";
+        cout << "║   month must be in betweem (1:12)  ║\n";
+        cout << "║                                    ║\n";
+        cout << "╚════════════════════════════════════╝\n";
+    }
+    else {
+        for (int i = 0; i < moodCount; i++) {
+            if (moods[i].time.day == day && moods[i].time.month == month && moods[i].time.year == year) {
+                mood_output(moods, i);
+                found = true;
+            }
         }
+    }
     if (!found) {
 
         cout << "╔════════════════════════════════════╗\n";
@@ -850,13 +863,22 @@ void SearchByType(moodEntry moods[], int& moodCount) {
     system("cls");
     string type;
     bool found = false;
-    cout << "_________________________________________________________________";
-    cout << "Enter the type of mood:";
+
+    int indexes[100];
+    int idxCount = 0;
+
+    char choice;
+    int level;
+    bool levelFound = false;
+
+    cout << "_________________________________________________________________\n";
+    cout << "Enter the type of mood:\n";
     cin >> type;
-    cout << endl << "      ________________";
+    cout << endl << "      ________________\n";
     for (int i = 0; i < moodCount; i++)
         if (moods[i].moodtype == type) {
             mood_output(moods, i);
+            indexes[idxCount++] = i;
             found = true;
         }
     if (!found) {
@@ -865,27 +887,123 @@ void SearchByType(moodEntry moods[], int& moodCount) {
         cout << "║ No mood found on with this type... ║\n";
         cout << "║                                    ║\n";
         cout << "╚════════════════════════════════════╝\n";
+        return;
     }
 
+    cout << "Do you want to filter these results by mood level ?  (y/n)\n";
+    cin >> choice;
+
+    if (choice == 'y' || choice == 'Y') {
+        system("cls");
+        cout << "_________________________________________________________________\n";
+        cout << "\nEnter the mood level:\n";
+        cin >> level;
+        for (int j = 0; j < idxCount; j++)
+            if (moods[indexes[j]].moodLevel == level) {
+                mood_output(moods, indexes[j]);
+                levelFound = true;
+            }
+        if (!levelFound) {
+            cout << endl;
+            cout << "╔═══════════════════════════════════════╗\n";
+            cout << "║                                       ║\n";
+            cout << "║No moods with this level in this type..║\n";
+            cout << "║                                       ║\n";
+            cout << "╚═══════════════════════════════════════╝\n";
+        }
+    }
+    else if (choice == 'N' || choice == 'n') {
+        cout << endl;
+        cout << "╔════════════════════════════════════╗\n";
+        cout << "║                                    ║\n";
+        cout << "║          Okay, returning...        ║\n";
+        cout << "║                                    ║\n";
+        cout << "╚════════════════════════════════════╝\n";
+    }
+    else {
+        cout << endl;
+        cout << "╔════════════════════════════════════╗\n";
+        cout << "║           Invalid choise!          ║\n";
+        cout << "╚════════════════════════════════════╝\n";
+    }
+}
+void SearchByLevel(moodEntry moods[], int& moodCount) {
+    system("cls");
+    int level;
+    bool found = false;
+    cout << "_______________________\n";
+    cout << "Enter the level of mood:\n";
+    cin >> level;
+    cout << endl << "      ______\n";
+    for (int i = 0; i < moodCount; i++)
+        if (moods[i].moodLevel == level) {
+            mood_output(moods, i);
+            found = true;
+        }
+    if (!found) {
+        cout << "╔════════════════════════════════════╗\n";
+        cout << "║                                    ║\n";
+        cout << "║   No mood found at this level...   ║\n";
+        cout << "║                                    ║\n";
+        cout << "╚════════════════════════════════════╝\n";
+    }
+}
+
+
+void SearchByWord(moodEntry moods[], int& moodCount) {
+    system("cls");
+    string word;
+    bool found = false;
+    cout << "_________________________________________________________________\n";
+    cout << "Enter a word to search in notes:\n";
+    cin >> word;
+    cout << endl << "      ________________\n";
+    for (int i = 0; i < moodCount; i++)
+        if (moods[i].note.find(word)!=string::npos) {
+            mood_output(moods, i);
+            found = true;
+        }
+    if (!found) {
+        cout << "╔════════════════════════════════════════╗\n";
+        cout << "║                                        ║\n";
+        cout << "║ No moods contain this word in notes... ║\n";
+        cout << "║                                        ║\n";
+        cout << "╚════════════════════════════════════════╝\n";
+    }
 }
 
 void SearchMood(moodEntry moods[], int& moodCount)
 {
     system("cls");
     int choise;
-    cout << "_________________________________________________________________";
-    cout << "ENTER 1 to search by date." << endl << "ENTER 2 to search by mood type";
+    cout << "_________________________________________________________________\n";
+    cout << "ENTER 1 to search by date." << endl << "ENTER 2 to search by mood type."
+        << endl << "ENTER 3 to search by mood level." << endl << "ENTER 4 to search by word in notes.\n";
     cin >> choise;
-    if (choise == 1)
+    switch (choise) {
+    case 1:
         SearchByDate(moods, moodCount);
-    else if (choise == 2)
-        SearchByType(moods, moodCount);
-    else {
+        break;
 
+    case 2:
+        SearchByType(moods, moodCount);
+        break;
+
+    case 3:
+        SearchByLevel(moods, moodCount);
+        break;
+
+    case 4:
+        SearchByword(moods, moodCount);
+        break;
+
+    default:
+        cout << endl;
         cout << "╔════════════════════════════════════╗\n";
         cout << "║           Invalid choise!          ║\n";
         cout << "╚════════════════════════════════════╝\n";
     }
+
 }
 
 //Update moods function
